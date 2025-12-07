@@ -8,9 +8,7 @@ Route::middleware('guest')->group(function () {
     Route::get('/admin/login', [AuthenticatedSessionController::class, 'create'])
         ->name('admin.login');
     
-    Route::post('/admin/login', function () {
-        return app(AuthenticatedSessionController::class)->store();
-    });
+    Route::post('/admin/login', [AuthenticatedSessionController::class, 'store']);
 });
 
 // Admin Protected Routes

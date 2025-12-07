@@ -8,9 +8,7 @@ Route::middleware('guest')->group(function () {
     Route::get('/farm/login', [AuthenticatedSessionController::class, 'create'])
         ->name('farm.login');
     
-    Route::post('/farm/login', function () {
-        return app(AuthenticatedSessionController::class)->store();
-    });
+    Route::post('/farm/login', [AuthenticatedSessionController::class, 'store']);
 });
 
 // Farm Manager Protected Routes
