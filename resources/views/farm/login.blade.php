@@ -2,10 +2,15 @@
     <div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
         <div class="max-w-md w-full space-y-8">
             <div>
-                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
+                <div class="flex justify-center mb-4">
+                    <div class="w-16 h-16 bg-pakistan-green-600 rounded-full flex items-center justify-center">
+                        <span class="text-white font-bold text-2xl">GB</span>
+                    </div>
+                </div>
+                <h2 class="mt-6 text-center text-3xl font-extrabold text-pakistan-green-700">
                     Farm Manager Login
                 </h2>
-                <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+                <p class="mt-2 text-center text-sm text-gray-600">
                     Gilgit-Baltistan Fisheries Management System
                 </p>
             </div>
@@ -20,7 +25,7 @@
             <!-- Session Status -->
             <x-auth-session-status class="mb-4" :status="session('status')" />
 
-            <form method="POST" action="{{ route('farm.login') }}" class="mt-8 space-y-6">
+            <form method="POST" action="{{ url('/farm/login') }}" class="mt-8 space-y-6">
                 @csrf
 
                 <!-- Email Address -->
@@ -53,9 +58,15 @@
                         Switch to Admin Login
                     </a>
 
-                    <x-primary-button class="ms-3">
+                    <button type="submit" class="ms-3 bg-pakistan-green-600 hover:bg-pakistan-green-700 text-white font-bold py-2 px-6 rounded-lg transition">
                         {{ __('Log in') }}
-                    </x-primary-button>
+                    </button>
+                </div>
+
+                <div class="mt-4 text-center">
+                    <a class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800" href="{{ route('farm.password.request') }}">
+                        {{ __('Forgot your password?') }}
+                    </a>
                 </div>
             </form>
         </div>

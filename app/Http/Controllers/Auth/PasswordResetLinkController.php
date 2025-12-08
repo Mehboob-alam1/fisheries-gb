@@ -15,7 +15,14 @@ class PasswordResetLinkController extends Controller
      */
     public function create(): View
     {
-        return view('auth.forgot-password');
+        // Determine which portal based on route
+        $isAdmin = request()->is('admin/forgot-password*') || request()->routeIs('admin.password.*');
+        $isFarm = request()->is('farm/forgot-password*') || request()->routeIs('farm.password.*');
+        
+        return view('auth.forgot-password', [
+            'isAdmin' => $isAdmin,
+            'isFarm' => $isFarm,
+        ]);
     }
 
     /**
@@ -36,9 +43,15 @@ class PasswordResetLinkController extends Controller
             $request->only('email')
         );
 
-        return $status == Password::RESET_LINK_SENT
-                    ? back()->with('status', __($status))
-                    : back()->withInput($request->only('email'))
-                        ->withErrors(['email' => __($status)]);
+        // Determine redirect route based on portal
+        $isAdmin = $request->is('admin/forgot-password*') || $request->routeIs('admin.password.*');
+        $isFarm = $request->is('farm/forgot-password*') || $request->routeIs('farm.password.*');
+        
+        if ($status == Password::RESET_LINK_SENT) {
+            return back()->with('status', __($status));
+        }
+        
+        return back()->withInput($request->only('email'))
+                    ->withErrors(['email' => __($status)]);
     }
 }

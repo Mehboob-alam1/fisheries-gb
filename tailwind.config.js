@@ -14,6 +14,21 @@ export default {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
+            colors: {
+                'pakistan-green': {
+                    50: '#f0f9f4',
+                    100: '#dcf2e3',
+                    200: '#bce4ca',
+                    300: '#8fcea8',
+                    400: '#5ab07d',
+                    500: '#36915a',
+                    600: '#277348',
+                    700: '#205c3b',
+                    800: '#1c4a31',
+                    900: '#183e29',
+                    950: '#0c2316',
+                },
+            },
         },
     },
 

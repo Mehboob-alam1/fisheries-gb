@@ -20,7 +20,15 @@ class NewPasswordController extends Controller
      */
     public function create(Request $request): View
     {
-        return view('auth.reset-password', ['request' => $request]);
+        // Determine which portal based on route
+        $isAdmin = $request->is('admin/reset-password*') || $request->routeIs('admin.password.*');
+        $isFarm = $request->is('farm/reset-password*') || $request->routeIs('farm.password.*');
+        
+        return view('auth.reset-password', [
+            'request' => $request,
+            'isAdmin' => $isAdmin,
+            'isFarm' => $isFarm,
+        ]);
     }
 
     /**
@@ -51,12 +59,23 @@ class NewPasswordController extends Controller
             }
         );
 
+        // Determine redirect route based on portal
+        $isAdmin = $request->is('admin/reset-password*') || $request->routeIs('admin.password.*');
+        $isFarm = $request->is('farm/reset-password*') || $request->routeIs('farm.password.*');
+        
         // If the password was successfully reset, we will redirect the user back to
         // the application's home authenticated view. If there is an error we can
         // redirect them back to where they came from with their error message.
-        return $status == Password::PASSWORD_RESET
-                    ? redirect()->route('login')->with('status', __($status))
-                    : back()->withInput($request->only('email'))
-                        ->withErrors(['email' => __($status)]);
+        if ($status == Password::PASSWORD_RESET) {
+            if ($isAdmin) {
+                return redirect()->route('admin.login')->with('status', __($status));
+            } elseif ($isFarm) {
+                return redirect()->route('farm.login')->with('status', __($status));
+            }
+            return redirect()->route('login')->with('status', __($status));
+        }
+        
+        return back()->withInput($request->only('email'))
+                    ->withErrors(['email' => __($status)]);
     }
 }

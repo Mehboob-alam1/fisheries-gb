@@ -38,16 +38,16 @@ class AuthenticatedSessionController extends Controller
         $user = Auth::user();
         
         // Redirect based on user role and login portal
-        if ($request->is('admin/login')) {
+        if ($request->is('admin/login') || $request->routeIs('admin.login')) {
             if (!$user->isAdmin()) {
                 Auth::logout();
-                return redirect()->route('admin.login')->with('error', 'Access denied. Only administrators can access this area.');
+                return redirect()->route('admin.login')->withErrors(['email' => 'Access denied. Only administrators can access this area.']);
             }
             return redirect()->intended(route('admin.dashboard', absolute: false));
-        } elseif ($request->is('farm/login')) {
+        } elseif ($request->is('farm/login') || $request->routeIs('farm.login')) {
             if (!$user->isManager()) {
                 Auth::logout();
-                return redirect()->route('farm.login')->with('error', 'Access denied. Only farm managers can access this area.');
+                return redirect()->route('farm.login')->withErrors(['email' => 'Access denied. Only farm managers can access this area.']);
             }
             return redirect()->intended(route('farm.dashboard', absolute: false));
         }
@@ -72,9 +72,9 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerateToken();
 
         // Redirect to appropriate login based on previous route
-        if (request()->is('admin/*')) {
+        if (request()->is('admin/*') || request()->routeIs('admin.*')) {
             return redirect()->route('admin.login');
-        } elseif (request()->is('farm/*')) {
+        } elseif (request()->is('farm/*') || request()->routeIs('farm.*')) {
             return redirect()->route('farm.login');
         }
         
