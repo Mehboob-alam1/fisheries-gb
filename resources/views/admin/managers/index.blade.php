@@ -51,6 +51,12 @@
                                                 <a href="{{ route('admin.managers.show', $manager) }}" class="text-blue-600 hover:text-blue-900 dark:text-blue-400">View</a>
                                                 <span class="mx-2">|</span>
                                                 <a href="{{ route('admin.managers.edit', $manager) }}" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400">Edit</a>
+                                                <span class="mx-2">|</span>
+                                                <form action="{{ route('admin.managers.destroy', $manager) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this manager?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-400">Delete</button>
+                                                </form>
                                             </td>
                                         </tr>
                                     @endforeach

@@ -110,8 +110,11 @@ class StaffController extends Controller
             'contact_number' => ['nullable', 'string', 'max:20'],
             'cnic' => ['nullable', 'string', 'max:20'],
             'joining_date' => ['nullable', 'date'],
-            'is_active' => ['boolean'],
+            'is_active' => ['nullable', 'boolean'],
         ]);
+
+        // Handle is_active checkbox (if not checked, it won't be in request)
+        $validated['is_active'] = $request->has('is_active') ? (bool)$request->input('is_active') : false;
 
         $staff->update($validated);
 

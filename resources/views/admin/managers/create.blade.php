@@ -74,26 +74,18 @@
                                     @error('district_id')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
-                                    <p class="mt-1 text-xs text-gray-500">Don't see a district? <a href="{{ route('admin.districts.create') }}" class="text-blue-600 hover:text-blue-900">Create one</a></p>
                                 </div>
 
                                 <div>
-                                    <label for="farm_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Farm Name *</label>
-                                    <input type="text" name="farm_name" id="farm_name" value="{{ old('farm_name') }}" required
-                                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600">
-                                    @error('farm_name')
+                                    <label for="farm_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Farm *</label>
+                                    <select name="farm_id" id="farm_id" required
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600">
+                                        <option value="">Select District First</option>
+                                    </select>
+                                    @error('farm_id')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
-                                </div>
-
-                                <div>
-                                    <label for="location" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Location (Optional)</label>
-                                    <input type="text" name="location" id="location" value="{{ old('location') }}"
-                                           placeholder="Coordinates or address"
-                                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600">
-                                    @error('location')
-                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                    @enderror
+                                    <p class="mt-1 text-xs text-gray-500">Select a district to see available farms</p>
                                 </div>
                             </div>
                         </div>
@@ -103,7 +95,7 @@
                                 Cancel
                             </a>
                             <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                Create Manager & Farm
+                                Create Manager
                             </button>
                         </div>
                     </form>
@@ -111,5 +103,59 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const districtSelect = document.getElementById('district_id');
+            const farmSelect = document.getElementById('farm_id');
+
+            districtSelect.addEventListener('change', function() {
+                const districtId = this.value;
+                farmSelect.innerHTML = '<option value="">Loading farms...</option>';
+                farmSelect.disabled = true;
+
+                if (!districtId) {
+                    farmSelect.innerHTML = '<option value="">Select District First</option>';
+                    farmSelect.disabled = false;
+                    return;
+                }
+
+                fetch(`/admin/api/districts/${districtId}/farms`)
+                    .then(response => response.json())
+                    .then(farms => {
+                        farmSelect.innerHTML = '<option value="">Select Farm</option>';
+                        
+                        if (farms.length === 0) {
+                            farmSelect.innerHTML += '<option value="" disabled>No available farms in this district</option>';
+                        } else {
+                            farms.forEach(farm => {
+                                const option = document.createElement('option');
+                                option.value = farm.id;
+                                option.textContent = farm.name;
+                                farmSelect.appendChild(option);
+                            });
+                        }
+                        
+                        farmSelect.disabled = false;
+                    })
+                    .catch(error => {
+                        console.error('Error loading farms:', error);
+                        farmSelect.innerHTML = '<option value="">Error loading farms</option>';
+                        farmSelect.disabled = false;
+                    });
+            });
+
+            // Load farms if district is pre-selected (from old input)
+            @if(old('district_id'))
+                districtSelect.dispatchEvent(new Event('change'));
+                // Set selected farm if exists
+                @if(old('farm_id'))
+                    setTimeout(() => {
+                        farmSelect.value = '{{ old("farm_id") }}';
+                    }, 500);
+                @endif
+            @endif
+        });
+    </script>
 </x-app-layout>
 

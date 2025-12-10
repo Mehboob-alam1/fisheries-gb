@@ -39,16 +39,21 @@
                                                 {{ $farm->name }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                                {{ $farm->district->name }}
+                                                {{ $farm->district->name ?? 'N/A' }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                                {{ $farm->manager->name }}
+                                                {{ $farm->manager->name ?? 'No Manager' }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                                 {{ $farm->location ?? 'N/A' }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                <a href="{{ route('admin.farms.edit', $farm) }}" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400">Edit</a>
+                                                <a href="{{ route('admin.farms.edit', $farm) }}" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 mr-3">Edit</a>
+                                                <form action="{{ route('admin.farms.destroy', $farm) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this farm?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-400">Delete</button>
+                                                </form>
                                             </td>
                                         </tr>
                                     @endforeach

@@ -30,7 +30,7 @@ class ManagerController extends Controller
      */
     public function create()
     {
-        $districts = District::orderBy('name')->get();
+        $districts = District::allowed()->orderBy('name')->get();
         return view('admin.managers.create', compact('districts'));
     }
 
@@ -44,9 +44,22 @@ class ManagerController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'district_id' => ['required', 'exists:districts,id'],
-            'farm_name' => ['required', 'string', 'max:255'],
-            'location' => ['nullable', 'string', 'max:255'],
+            'farm_id' => ['required', 'exists:farms,id'],
         ]);
+
+        // Verify the farm belongs to the selected district and has no manager
+        $farm = Farm::findOrFail($validated['farm_id']);
+        if ($farm->district_id != $validated['district_id']) {
+            return back()
+                ->withInput()
+                ->withErrors(['farm_id' => 'The selected farm does not belong to the selected district.']);
+        }
+
+        if ($farm->manager_id !== null) {
+            return back()
+                ->withInput()
+                ->withErrors(['farm_id' => 'This farm already has a manager assigned.']);
+        }
 
         // Create the farm manager user
         $manager = User::create([
@@ -57,12 +70,9 @@ class ManagerController extends Controller
             'district_id' => $validated['district_id'],
         ]);
 
-        // Create the farm and assign to manager
-        Farm::create([
-            'district_id' => $validated['district_id'],
-            'name' => $validated['farm_name'],
+        // Assign the existing farm to the manager
+        $farm->update([
             'manager_id' => $manager->id,
-            'location' => $validated['location'] ?? null,
         ]);
 
         return redirect()
@@ -96,9 +106,22 @@ class ManagerController extends Controller
             abort(404);
         }
 
-        $districts = District::orderBy('name')->get();
+        $districts = District::allowed()->orderBy('name')->get();
         $manager->load('farm');
-        return view('admin.managers.edit', compact('manager', 'districts'));
+        
+        // Get farms for the manager's current district (for initial load)
+        $farms = collect();
+        if ($manager->district_id) {
+            $farms = Farm::where('district_id', $manager->district_id)
+                ->where(function($query) use ($manager) {
+                    $query->whereNull('manager_id')
+                          ->orWhere('manager_id', $manager->id);
+                })
+                ->orderBy('name')
+                ->get();
+        }
+        
+        return view('admin.managers.edit', compact('manager', 'districts', 'farms'));
     }
 
     /**
@@ -115,9 +138,23 @@ class ManagerController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $manager->id],
             'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
             'district_id' => ['required', 'exists:districts,id'],
-            'farm_name' => ['required', 'string', 'max:255'],
-            'location' => ['nullable', 'string', 'max:255'],
+            'farm_id' => ['required', 'exists:farms,id'],
         ]);
+
+        // Verify the farm belongs to the selected district
+        $farm = Farm::findOrFail($validated['farm_id']);
+        if ($farm->district_id != $validated['district_id']) {
+            return back()
+                ->withInput()
+                ->withErrors(['farm_id' => 'The selected farm does not belong to the selected district.']);
+        }
+
+        // Check if farm already has a different manager
+        if ($farm->manager_id !== null && $farm->manager_id != $manager->id) {
+            return back()
+                ->withInput()
+                ->withErrors(['farm_id' => 'This farm already has a different manager assigned.']);
+        }
 
         $manager->update([
             'name' => $validated['name'],
@@ -132,15 +169,15 @@ class ManagerController extends Controller
             ]);
         }
 
-        // Update farm
-        $farm = $manager->farm;
-        if ($farm) {
-            $farm->update([
-                'district_id' => $validated['district_id'],
-                'name' => $validated['farm_name'],
-                'location' => $validated['location'] ?? null,
-            ]);
+        // Update farm assignment
+        $oldFarm = $manager->farm;
+        if ($oldFarm && $oldFarm->id != $validated['farm_id']) {
+            $oldFarm->update(['manager_id' => null]);
         }
+
+        $farm->update([
+            'manager_id' => $manager->id,
+        ]);
 
         return redirect()
             ->route('admin.managers.show', $manager)

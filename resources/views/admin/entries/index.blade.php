@@ -1,8 +1,13 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="text-xl font-semibold leading-tight text-gray-800">
-            All Farm Entries
-        </h2>
+        <div class="flex justify-between items-center">
+            <h2 class="text-xl font-semibold leading-tight text-gray-800">
+                All Farm Entries
+            </h2>
+            <a href="{{ route('admin.entries.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Create New Entry
+            </a>
+        </div>
     </x-slot>
 
     <div class="py-6">
@@ -179,10 +184,21 @@
                                             {{ $entry->water_temp ? number_format($entry->water_temp, 1) . '°C' : 'N/A' }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <a href="{{ route('admin.entries.show', $entry) }}" 
-                                               class="text-pakistan-green-600 hover:text-pakistan-green-900">
-                                                View Details
-                                            </a>
+                                            <div class="flex items-center justify-end space-x-3">
+                                                <a href="{{ route('admin.entries.show', $entry) }}" 
+                                                   class="text-pakistan-green-600 hover:text-pakistan-green-900">
+                                                    View
+                                                </a>
+                                                <a href="{{ route('admin.entries.edit', $entry) }}" 
+                                                   class="text-indigo-600 hover:text-indigo-900">
+                                                    Edit
+                                                </a>
+                                                <form action="{{ route('admin.entries.destroy', $entry) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this entry?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                                                </form>
+                                            </div>
                                         </td>
                                     </tr>
                                 @endforeach

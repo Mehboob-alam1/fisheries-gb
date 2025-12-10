@@ -12,6 +12,32 @@ class District extends Model
     ];
 
     /**
+     * Get the list of allowed district names from the seeder
+     */
+    public static function getAllowedDistricts(): array
+    {
+        return [
+            'Gilgit',
+            'Skardu',
+            'Kharmang',
+            'Ghanche',
+            'Astore',
+            'Diamer',
+            'Ghizer',
+            'Nagar',
+            'Shigar',
+        ];
+    }
+
+    /**
+     * Scope to get only allowed districts
+     */
+    public function scopeAllowed($query)
+    {
+        return $query->whereIn('name', self::getAllowedDistricts());
+    }
+
+    /**
      * Get all farms in this district
      */
     public function farms(): HasMany

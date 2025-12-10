@@ -27,7 +27,7 @@ class FarmController extends Controller
      */
     public function create()
     {
-        $districts = District::orderBy('name')->get();
+        $districts = District::allowed()->orderBy('name')->get();
         $managers = User::where('role', 'manager')
             ->whereDoesntHave('farm')
             ->orderBy('name')
@@ -68,7 +68,7 @@ class FarmController extends Controller
      */
     public function edit(Farm $farm)
     {
-        $districts = District::orderBy('name')->get();
+        $districts = District::allowed()->orderBy('name')->get();
         $managers = User::where('role', 'manager')
             ->where(function($query) use ($farm) {
                 $query->whereDoesntHave('farm')
@@ -119,5 +119,25 @@ class FarmController extends Controller
         return redirect()
             ->route('admin.farms.index')
             ->with('success', 'Farm deleted successfully!');
+    }
+
+    /**
+     * Get farms by district (API endpoint for dropdown)
+     */
+    public function getFarmsByDistrict(Request $request, District $district)
+    {
+        $query = Farm::where('district_id', $district->id);
+        
+        // Include farms without managers, or a specific farm if provided (for editing)
+        $query->where(function($q) use ($request) {
+            $q->whereNull('manager_id');
+            if ($request->has('include_farm_id')) {
+                $q->orWhere('id', $request->input('include_farm_id'));
+            }
+        });
+        
+        $farms = $query->orderBy('name')->get(['id', 'name']);
+
+        return response()->json($farms);
     }
 }

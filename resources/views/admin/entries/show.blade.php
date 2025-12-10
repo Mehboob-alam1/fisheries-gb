@@ -60,31 +60,148 @@
                                 <p class="text-xs text-pakistan-green-600 mt-1">Total number of fish</p>
                             </div>
 
-                            <div class="bg-blue-50 rounded-lg p-4">
-                                <label class="block text-sm font-medium text-blue-700 mb-2">Feed Quantity</label>
-                                <p class="text-3xl font-bold text-blue-900">{{ number_format($entry->feed_quantity, 2) }} kg</p>
-                                <p class="text-xs text-blue-600 mt-1">Feed consumed</p>
-                            </div>
-
                             <div class="bg-red-50 rounded-lg p-4">
                                 <label class="block text-sm font-medium text-red-700 mb-2">Mortality</label>
                                 <p class="text-3xl font-bold text-red-900">{{ number_format($entry->mortality) }}</p>
                                 <p class="text-xs text-red-600 mt-1">Number of deaths</p>
                             </div>
-
-                            @if($entry->water_temp)
-                            <div class="bg-cyan-50 rounded-lg p-4">
-                                <label class="block text-sm font-medium text-cyan-700 mb-2">Water Temperature</label>
-                                <p class="text-3xl font-bold text-cyan-900">{{ number_format($entry->water_temp, 1) }}°C</p>
-                            </div>
-                            @endif
                         </div>
                     </div>
 
-                    <!-- Remarks Section -->
+                    <!-- Fish Stock Details Section -->
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Fish Stock Details</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Shifting → In</label>
+                                <p class="text-2xl font-bold text-gray-900">{{ number_format($entry->shifting_in) }}</p>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Shifting → Out</label>
+                                <p class="text-2xl font-bold text-gray-900">{{ number_format($entry->shifting_out) }}</p>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Sale</label>
+                                <p class="text-2xl font-bold text-gray-900">{{ number_format($entry->sale) }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fish Feed Section -->
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Fish Feed</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="bg-blue-50 rounded-lg p-4">
+                                <label class="block text-sm font-medium text-blue-700 mb-2">Feed In Stock</label>
+                                <p class="text-2xl font-bold text-blue-900">{{ number_format($entry->feed_in_stock, 2) }} kg</p>
+                            </div>
+                            <div class="bg-blue-50 rounded-lg p-4">
+                                <label class="block text-sm font-medium text-blue-700 mb-2">Feed Consumption</label>
+                                <p class="text-2xl font-bold text-blue-900">{{ number_format($entry->feed_consumption, 2) }} kg</p>
+                            </div>
+                            <div class="bg-blue-50 rounded-lg p-4">
+                                <label class="block text-sm font-medium text-blue-700 mb-2">Feed Quantity (Legacy)</label>
+                                <p class="text-2xl font-bold text-blue-900">{{ number_format($entry->feed_quantity, 2) }} kg</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Medication Section -->
+                    @if($entry->medication)
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Medication</h3>
+                        <div class="bg-yellow-50 rounded-lg p-4">
+                            <p class="text-sm text-gray-900 whitespace-pre-wrap">{{ $entry->medication }}</p>
+                        </div>
+                    </div>
+                    @endif
+
+                    <!-- Water Parameters Section -->
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Water Parameters</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            @if($entry->water_temp)
+                            <div class="bg-cyan-50 rounded-lg p-4">
+                                <label class="block text-sm font-medium text-cyan-700 mb-2">Temperature</label>
+                                <p class="text-2xl font-bold text-cyan-900">{{ number_format($entry->water_temp, 1) }}°C</p>
+                            </div>
+                            @endif
+                            @if($entry->water_ph)
+                            <div class="bg-cyan-50 rounded-lg p-4">
+                                <label class="block text-sm font-medium text-cyan-700 mb-2">pH</label>
+                                <p class="text-2xl font-bold text-cyan-900">{{ number_format($entry->water_ph, 2) }}</p>
+                            </div>
+                            @endif
+                            @if($entry->water_do)
+                            <div class="bg-cyan-50 rounded-lg p-4">
+                                <label class="block text-sm font-medium text-cyan-700 mb-2">DO (Dissolved Oxygen)</label>
+                                <p class="text-2xl font-bold text-cyan-900">{{ number_format($entry->water_do, 2) }} mg/L</p>
+                            </div>
+                            @endif
+                        </div>
+                        @if(!$entry->water_temp && !$entry->water_ph && !$entry->water_do)
+                        <p class="text-sm text-gray-500 mt-2">No water parameters recorded</p>
+                        @endif
+                    </div>
+
+                    <!-- Offence Cases Section -->
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Offence Cases</h3>
+                        <div class="bg-orange-50 rounded-lg p-4">
+                            <p class="text-2xl font-bold text-orange-900">{{ number_format($entry->offence_cases) }}</p>
+                            <p class="text-xs text-orange-600 mt-1">Number of offence cases registered</p>
+                        </div>
+                    </div>
+
+                    <!-- Staff Attendance Section -->
+                    @if($entry->staffAttendance->count() > 0)
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Staff Attendance</h3>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Staff Name</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Position</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Check In</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Check Out</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    @foreach($entry->staffAttendance as $attendance)
+                                    <tr>
+                                        <td class="px-4 py-3 text-sm text-gray-900">{{ $attendance->staff->name ?? 'N/A' }}</td>
+                                        <td class="px-4 py-3 text-sm text-gray-600">{{ $attendance->staff->position ?? 'N/A' }}</td>
+                                        <td class="px-4 py-3 text-sm">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                {{ ucfirst($attendance->status) }}
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gray-600">{{ $attendance->check_in ? \Carbon\Carbon::parse($attendance->check_in)->format('h:i A') : 'N/A' }}</td>
+                                        <td class="px-4 py-3 text-sm text-gray-600">{{ $attendance->check_out ? \Carbon\Carbon::parse($attendance->check_out)->format('h:i A') : 'N/A' }}</td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    @endif
+
+                    <!-- Additional Notes Section -->
+                    @if($entry->additional_notes)
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Additional Notes</h3>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <p class="text-sm text-gray-900 whitespace-pre-wrap">{{ $entry->additional_notes }}</p>
+                        </div>
+                    </div>
+                    @endif
+
+                    <!-- Remarks Section (Legacy) -->
                     @if($entry->remarks)
                     <div class="mt-6 pt-6 border-t border-gray-200">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Remarks</label>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Remarks (Legacy)</h3>
                         <div class="bg-gray-50 rounded-lg p-4">
                             <p class="text-sm text-gray-900 whitespace-pre-wrap">{{ $entry->remarks }}</p>
                         </div>

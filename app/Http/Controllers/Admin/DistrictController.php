@@ -10,11 +10,13 @@ class DistrictController extends Controller
 {
     /**
      * Display a listing of districts.
+     * Only shows districts from the seeder.
      */
     public function index()
     {
-        $districts = District::withCount(['farms', 'managers'])
-            ->latest()
+        $districts = District::allowed()
+            ->withCount(['farms', 'managers'])
+            ->orderBy('name')
             ->paginate(15);
 
         return view('admin.districts.index', compact('districts'));
@@ -73,6 +75,13 @@ class DistrictController extends Controller
      */
     public function destroy(District $district)
     {
+        // Check if district has farms
+        if ($district->farms()->count() > 0) {
+            return redirect()
+                ->route('admin.districts.index')
+                ->with('error', 'Cannot delete district with existing farms. Please remove or reassign farms first.');
+        }
+
         $district->delete();
 
         return redirect()

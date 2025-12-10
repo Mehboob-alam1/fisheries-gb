@@ -62,10 +62,19 @@ class EntryController extends Controller
         $validated = $request->validate([
             'date' => ['required', 'date', 'before_or_equal:today'],
             'fish_stock' => ['required', 'integer', 'min:0'],
-            'feed_quantity' => ['required', 'numeric', 'min:0'],
             'mortality' => ['required', 'integer', 'min:0'],
+            'shifting_in' => ['required', 'integer', 'min:0'],
+            'shifting_out' => ['required', 'integer', 'min:0'],
+            'sale' => ['required', 'integer', 'min:0'],
+            'feed_in_stock' => ['required', 'numeric', 'min:0'],
+            'feed_consumption' => ['required', 'numeric', 'min:0'],
+            'medication' => ['nullable', 'string', 'max:2000'],
             'water_temp' => ['nullable', 'numeric', 'min:0', 'max:50'],
-            'remarks' => ['nullable', 'string', 'max:1000'],
+            'water_ph' => ['nullable', 'numeric', 'min:0', 'max:14'],
+            'water_do' => ['nullable', 'numeric', 'min:0'],
+            'offence_cases' => ['required', 'integer', 'min:0'],
+            'additional_notes' => ['nullable', 'string', 'max:2000'],
+            'staff_attendance' => ['nullable', 'array'],
         ]);
 
         // Check if entry already exists for this date
@@ -126,9 +135,13 @@ class EntryController extends Controller
                 ->with('success', 'Daily entry added successfully! You can edit or delete it within 3 hours.');
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error('Entry creation failed: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all()
+            ]);
             return back()
                 ->withInput()
-                ->with('error', 'An error occurred while saving the entry. Please try again.');
+                ->with('error', 'An error occurred while saving the entry: ' . $e->getMessage());
         }
     }
 

@@ -78,22 +78,22 @@
                                 </div>
 
                                 <div>
-                                    <label for="farm_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Farm Name *</label>
-                                    <input type="text" name="farm_name" id="farm_name" value="{{ old('farm_name', $manager->farm->name ?? '') }}" required
-                                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600">
-                                    @error('farm_name')
+                                    <label for="farm_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Farm *</label>
+                                    <select name="farm_id" id="farm_id" required
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600">
+                                        <option value="">Select District First</option>
+                                        @if(isset($farms) && $farms->count() > 0)
+                                            @foreach($farms as $farm)
+                                                <option value="{{ $farm->id }}" {{ old('farm_id', $manager->farm->id ?? '') == $farm->id ? 'selected' : '' }}>
+                                                    {{ $farm->name }}
+                                                </option>
+                                            @endforeach
+                                        @endif
+                                    </select>
+                                    @error('farm_id')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
-                                </div>
-
-                                <div>
-                                    <label for="location" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Location (Optional)</label>
-                                    <input type="text" name="location" id="location" value="{{ old('location', $manager->farm->location ?? '') }}"
-                                           placeholder="Coordinates or address"
-                                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600">
-                                    @error('location')
-                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                    @enderror
+                                    <p class="mt-1 text-xs text-gray-500">Select a district to see available farms</p>
                                 </div>
                             </div>
                         </div>
@@ -111,5 +111,67 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const districtSelect = document.getElementById('district_id');
+            const farmSelect = document.getElementById('farm_id');
+            const currentFarmId = {{ $manager->farm->id ?? 'null' }};
+            const currentDistrictId = {{ $manager->district_id ?? 'null' }};
+
+            districtSelect.addEventListener('change', function() {
+                const districtId = this.value;
+                const selectedFarmId = farmSelect.value;
+                farmSelect.innerHTML = '<option value="">Loading farms...</option>';
+                farmSelect.disabled = true;
+
+                if (!districtId) {
+                    farmSelect.innerHTML = '<option value="">Select District First</option>';
+                    farmSelect.disabled = false;
+                    return;
+                }
+
+                const includeFarmId = currentFarmId ? `?include_farm_id=${currentFarmId}` : '';
+                fetch(`/admin/api/districts/${districtId}/farms${includeFarmId}`)
+                    .then(response => response.json())
+                    .then(farms => {
+                        farmSelect.innerHTML = '<option value="">Select Farm</option>';
+                        
+                        if (farms.length === 0) {
+                            farmSelect.innerHTML += '<option value="" disabled>No available farms in this district</option>';
+                        } else {
+                            farms.forEach(farm => {
+                                const option = document.createElement('option');
+                                option.value = farm.id;
+                                option.textContent = farm.name;
+                                farmSelect.appendChild(option);
+                            });
+                        }
+                        
+                        // If district hasn't changed, restore the selected farm
+                        if (districtId == currentDistrictId && currentFarmId) {
+                            farmSelect.value = currentFarmId;
+                        } else if (selectedFarmId) {
+                            // Try to keep the previously selected farm if it's in the new list
+                            if (Array.from(farmSelect.options).some(opt => opt.value == selectedFarmId)) {
+                                farmSelect.value = selectedFarmId;
+                            }
+                        }
+                        
+                        farmSelect.disabled = false;
+                    })
+                    .catch(error => {
+                        console.error('Error loading farms:', error);
+                        farmSelect.innerHTML = '<option value="">Error loading farms</option>';
+                        farmSelect.disabled = false;
+                    });
+            });
+
+            // Load farms on page load if district is selected
+            if (currentDistrictId) {
+                districtSelect.dispatchEvent(new Event('change'));
+            }
+        });
+    </script>
 </x-app-layout>
 

@@ -51,7 +51,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         ->name('managers.reset-password');
     
     // Entries Management
-    Route::get('/entries', [\App\Http\Controllers\Admin\EntryController::class, 'index'])->name('entries.index');
-    Route::get('/entries/{entry}', [\App\Http\Controllers\Admin\EntryController::class, 'show'])->name('entries.show');
+    Route::resource('entries', \App\Http\Controllers\Admin\EntryController::class);
+    
+    // API Routes for dropdowns
+    Route::get('/api/districts/{district}/farms', [\App\Http\Controllers\Admin\FarmController::class, 'getFarmsByDistrict'])
+        ->name('api.farms.by-district');
 });
 
