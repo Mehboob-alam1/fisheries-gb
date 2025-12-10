@@ -41,5 +41,8 @@ Route::middleware(['auth', 'manager'])->prefix('farm')->name('farm.')->group(fun
     
     // Daily Entries Management
     Route::resource('entries', \App\Http\Controllers\Farm\EntryController::class);
+    
+    // Staff Management
+    Route::resource('staff', \App\Http\Controllers\Farm\StaffController::class);
 });
 

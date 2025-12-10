@@ -38,4 +38,12 @@ class Farm extends Model
     {
         return $this->hasMany(Entry::class);
     }
+
+    /**
+     * Get all staff members for this farm
+     */
+    public function staff(): HasMany
+    {
+        return $this->hasMany(Staff::class);
+    }
 }

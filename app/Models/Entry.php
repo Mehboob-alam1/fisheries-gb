@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Carbon\Carbon;
 
 class Entry extends Model
@@ -12,10 +13,19 @@ class Entry extends Model
         'farm_id',
         'date',
         'fish_stock',
-        'feed_quantity',
         'mortality',
+        'shifting_in',
+        'shifting_out',
+        'sale',
+        'feed_quantity',
+        'feed_in_stock',
+        'feed_consumption',
+        'medication',
         'water_temp',
-        'remarks',
+        'water_ph',
+        'water_do',
+        'offence_cases',
+        'additional_notes',
         'editable_until',
     ];
 
@@ -25,7 +35,11 @@ class Entry extends Model
             'date' => 'date',
             'editable_until' => 'datetime',
             'feed_quantity' => 'decimal:2',
+            'feed_in_stock' => 'decimal:2',
+            'feed_consumption' => 'decimal:2',
             'water_temp' => 'decimal:2',
+            'water_ph' => 'decimal:2',
+            'water_do' => 'decimal:2',
         ];
     }
 
@@ -35,6 +49,14 @@ class Entry extends Model
     public function farm(): BelongsTo
     {
         return $this->belongsTo(Farm::class);
+    }
+
+    /**
+     * Get all staff attendance records for this entry
+     */
+    public function staffAttendance(): HasMany
+    {
+        return $this->hasMany(StaffAttendance::class);
     }
 
     /**

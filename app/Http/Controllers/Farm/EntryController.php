@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Farm;
 
 use App\Http\Controllers\Controller;
 use App\Models\Entry;
+use App\Models\StaffAttendance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class EntryController extends Controller
@@ -78,20 +80,56 @@ class EntryController extends Controller
         }
 
         // Create entry with editable_until set to 3 hours from now
-        $entry = Entry::create([
-            'farm_id' => $farm->id,
-            'date' => $validated['date'],
-            'fish_stock' => $validated['fish_stock'],
-            'feed_quantity' => $validated['feed_quantity'],
-            'mortality' => $validated['mortality'],
-            'water_temp' => $validated['water_temp'] ?? null,
-            'remarks' => $validated['remarks'] ?? null,
-            'editable_until' => Carbon::now()->addHours(3),
-        ]);
+        DB::beginTransaction();
+        try {
+            $entry = Entry::create([
+                'farm_id' => $farm->id,
+                'date' => $validated['date'],
+                'fish_stock' => $validated['fish_stock'],
+                'mortality' => $validated['mortality'],
+                'shifting_in' => $validated['shifting_in'],
+                'shifting_out' => $validated['shifting_out'],
+                'sale' => $validated['sale'],
+                'feed_quantity' => 0, // Keep for backward compatibility
+                'feed_in_stock' => $validated['feed_in_stock'],
+                'feed_consumption' => $validated['feed_consumption'],
+                'medication' => $validated['medication'] ?? null,
+                'water_temp' => $validated['water_temp'] ?? null,
+                'water_ph' => $validated['water_ph'] ?? null,
+                'water_do' => $validated['water_do'] ?? null,
+                'offence_cases' => $validated['offence_cases'],
+                'additional_notes' => $validated['additional_notes'] ?? null,
+                'editable_until' => Carbon::now()->addHours(3),
+            ]);
 
-        return redirect()
-            ->route('farm.entries.index')
-            ->with('success', 'Daily entry added successfully! You can edit or delete it within 3 hours.');
+            // Handle staff attendance
+            if ($request->has('staff_attendance') && is_array($request->staff_attendance)) {
+                foreach ($request->staff_attendance as $staffId => $attendanceData) {
+                    if (isset($attendanceData['present']) && $attendanceData['present'] == 1) {
+                        StaffAttendance::create([
+                            'staff_id' => $staffId,
+                            'entry_id' => $entry->id,
+                            'date' => $validated['date'],
+                            'status' => 'present',
+                            'check_in' => $attendanceData['check_in'] ?? null,
+                            'check_out' => $attendanceData['check_out'] ?? null,
+                            'remarks' => null,
+                        ]);
+                    }
+                }
+            }
+
+            DB::commit();
+
+            return redirect()
+                ->route('farm.entries.index')
+                ->with('success', 'Daily entry added successfully! You can edit or delete it within 3 hours.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()
+                ->withInput()
+                ->with('error', 'An error occurred while saving the entry. Please try again.');
+        }
     }
 
     /**
@@ -136,10 +174,19 @@ class EntryController extends Controller
         $validated = $request->validate([
             'date' => ['required', 'date', 'before_or_equal:today'],
             'fish_stock' => ['required', 'integer', 'min:0'],
-            'feed_quantity' => ['required', 'numeric', 'min:0'],
             'mortality' => ['required', 'integer', 'min:0'],
+            'shifting_in' => ['required', 'integer', 'min:0'],
+            'shifting_out' => ['required', 'integer', 'min:0'],
+            'sale' => ['required', 'integer', 'min:0'],
+            'feed_in_stock' => ['required', 'numeric', 'min:0'],
+            'feed_consumption' => ['required', 'numeric', 'min:0'],
+            'medication' => ['nullable', 'string', 'max:2000'],
             'water_temp' => ['nullable', 'numeric', 'min:0', 'max:50'],
-            'remarks' => ['nullable', 'string', 'max:1000'],
+            'water_ph' => ['nullable', 'numeric', 'min:0', 'max:14'],
+            'water_do' => ['nullable', 'numeric', 'min:0'],
+            'offence_cases' => ['required', 'integer', 'min:0'],
+            'additional_notes' => ['nullable', 'string', 'max:2000'],
+            'staff_attendance' => ['nullable', 'array'],
         ]);
 
         // Check if another entry exists for the new date (if date changed)
@@ -156,11 +203,54 @@ class EntryController extends Controller
             }
         }
 
-        $entry->update($validated);
+        DB::beginTransaction();
+        try {
+            $entry->update([
+                'date' => $validated['date'],
+                'fish_stock' => $validated['fish_stock'],
+                'mortality' => $validated['mortality'],
+                'shifting_in' => $validated['shifting_in'],
+                'shifting_out' => $validated['shifting_out'],
+                'sale' => $validated['sale'],
+                'feed_in_stock' => $validated['feed_in_stock'],
+                'feed_consumption' => $validated['feed_consumption'],
+                'medication' => $validated['medication'] ?? null,
+                'water_temp' => $validated['water_temp'] ?? null,
+                'water_ph' => $validated['water_ph'] ?? null,
+                'water_do' => $validated['water_do'] ?? null,
+                'offence_cases' => $validated['offence_cases'],
+                'additional_notes' => $validated['additional_notes'] ?? null,
+            ]);
 
-        return redirect()
-            ->route('farm.entries.index')
-            ->with('success', 'Entry updated successfully!');
+            // Update staff attendance - delete old and create new
+            $entry->staffAttendance()->delete();
+            if ($request->has('staff_attendance') && is_array($request->staff_attendance)) {
+                foreach ($request->staff_attendance as $staffId => $attendanceData) {
+                    if (isset($attendanceData['present']) && $attendanceData['present'] == 1) {
+                        StaffAttendance::create([
+                            'staff_id' => $staffId,
+                            'entry_id' => $entry->id,
+                            'date' => $validated['date'],
+                            'status' => 'present',
+                            'check_in' => $attendanceData['check_in'] ?? null,
+                            'check_out' => $attendanceData['check_out'] ?? null,
+                            'remarks' => null,
+                        ]);
+                    }
+                }
+            }
+
+            DB::commit();
+
+            return redirect()
+                ->route('farm.entries.index')
+                ->with('success', 'Entry updated successfully!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()
+                ->withInput()
+                ->with('error', 'An error occurred while updating the entry. Please try again.');
+        }
     }
 
     /**

@@ -12,17 +12,17 @@ class DistrictsSeeder extends Seeder
      */
     public function run(): void
     {
+        // Use real districts from Gilgit-Baltistan
         $districts = [
             'Gilgit',
             'Skardu',
-            'Hunza',
-            'Nagar',
-            'Ghizer',
-            'Diamer',
-            'Astore',
-            'Ghanche',
-            'Shigar',
             'Kharmang',
+            'Ghanche',
+            'Astore',
+            'Diamer',
+            'Ghizer',
+            'Nagar',
+            'Shigar',
         ];
 
         foreach ($districts as $districtName) {
