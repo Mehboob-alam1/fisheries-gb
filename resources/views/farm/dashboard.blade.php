@@ -104,7 +104,7 @@
             <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
                 <h4 class="text-xl font-semibold text-gray-800 mb-4">Quick Actions</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <a href="#" class="flex items-center p-4 bg-pakistan-green-50 rounded-lg hover:bg-pakistan-green-100 transition border border-pakistan-green-200">
+                    <a href="{{ route('farm.entries.create') }}" class="flex items-center p-4 bg-pakistan-green-50 rounded-lg hover:bg-pakistan-green-100 transition border border-pakistan-green-200">
                         <div class="w-10 h-10 bg-pakistan-green-500 rounded-lg flex items-center justify-center mr-4">
                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -115,7 +115,7 @@
                             <p class="text-sm text-pakistan-green-700">Record daily farm data</p>
                         </div>
                     </a>
-                    <a href="#" class="flex items-center p-4 bg-pakistan-green-50 rounded-lg hover:bg-pakistan-green-100 transition border border-pakistan-green-200">
+                    <a href="{{ route('farm.entries.index') }}" class="flex items-center p-4 bg-pakistan-green-50 rounded-lg hover:bg-pakistan-green-100 transition border border-pakistan-green-200">
                         <div class="w-10 h-10 bg-pakistan-green-500 rounded-lg flex items-center justify-center mr-4">
                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>

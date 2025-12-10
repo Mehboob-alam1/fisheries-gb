@@ -49,5 +49,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('managers', \App\Http\Controllers\Admin\ManagerController::class);
     Route::post('/managers/{manager}/reset-password', [\App\Http\Controllers\Admin\ManagerController::class, 'resetPassword'])
         ->name('managers.reset-password');
+    
+    // Entries Management
+    Route::get('/entries', [\App\Http\Controllers\Admin\EntryController::class, 'index'])->name('entries.index');
+    Route::get('/entries/{entry}', [\App\Http\Controllers\Admin\EntryController::class, 'show'])->name('entries.show');
 });
 
